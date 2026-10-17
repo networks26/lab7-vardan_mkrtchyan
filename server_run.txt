@@ -1,0 +1,9 @@
+parent 17872 listening on 127.0.0.1:32226
+parent: started child 17873
+parent: started child 17874
+parent: started child 17878
+parent: started child 17879
+parent: started child 17880
+
+SIGINT caught
+parent: listening socket closed, server exiting

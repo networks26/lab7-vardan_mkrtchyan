@@ -13,7 +13,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define PORT 23000
+#define PORT 32226
 #define BACKLOG 5
 #define MAX_CLIENTS 16
 #define BUFFER_SIZE 512

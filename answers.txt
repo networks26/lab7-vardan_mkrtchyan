@@ -1,0 +1,33 @@
+1. fork() duplicates the process's file descriptors. The child closes its copy
+   of the listening socket because it only serves its accepted client. The
+   parent closes its copy of the accepted socket because the child handles
+   that connection. Closing one process's copy does not close the other copy;
+   closing unused descriptors avoids leaks and lets the connection close when
+   the child finishes.
+
+2. SIGCHLD notifies the parent when a child's state changes, including when it
+   exits. waitpid(-1, NULL, WNOHANG) collects any exited child without blocking
+   if none is ready. The loop reaps all available children, preventing zombies
+   while allowing the parent to continue accepting clients.
+
+3. EINTR means a system call was interrupted by a signal. For an unrelated
+   interruption, accept() can be retried. On Ctrl+C, the supplied SIGINT handler
+   sets stopping, closes the listening descriptor, and prints "SIGINT caught".
+   The main loop checks stopping before handling accept() errors, breaks out,
+   prints the shutdown message, and exits cleanly rather than retrying forever.
+   Depending on signal restart behavior, closing the descriptor can also make
+   accept() fail with a descriptor error; the stopping check handles this too.
+
+4. The actual ps output in verification.txt showed server parent PID 17872
+   with two children, 17873 and 17874, while both clients were connected and
+   idle. After client C sent "second", only child 17873 remained. After client
+   B sent "first", neither child remained: both had been reaped, with no zombies.
+   poll_server remained a single process, PID 17881, with no children throughout.
+   Both poll replies contained PID 17881; the fork replies had different PIDs.
+
+5. poll_server stores the listening socket and connected client sockets in
+   struct pollfd fds[MAX_CLIENTS + 1]. poll() waits for readiness across these
+   descriptors. The event loop accepts new clients and reads/replies on ready
+   client sockets, skipping idle clients. Thus one process serves both clients
+   without fork(); an idle first client does not prevent replying to the second.
+   This exercise handles one short message per connection.

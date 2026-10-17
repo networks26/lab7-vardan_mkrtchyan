@@ -1,0 +1,9 @@
+server 17881 listening on 127.0.0.1:32226 (poll, no fork)
+server: accepted client in slot 1
+server: accepted client in slot 2
+server: accepted client in slot 1
+server: accepted client in slot 1
+server: accepted client in slot 1
+
+SIGINT caught
+server: sockets closed, exiting

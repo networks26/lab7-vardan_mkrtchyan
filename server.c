@@ -13,7 +13,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#define PORT 23000
+#define PORT 32226
 #define BACKLOG 5
 #define BUFFER_SIZE 512
 
@@ -78,7 +78,7 @@ int main(void)
     pid_t pid;
 
     /* TODO 1: Register the function that handles Ctrl+C (SIGINT). */
-    if (signal(SIGINT, ???) == SIG_ERR) {
+    if (signal(SIGINT, on_sigint) == SIG_ERR) {
         perror("signal SIGINT");
         return 1;
     }
@@ -90,7 +90,7 @@ int main(void)
     }
 
     /* TODO 2: Create an IPv4 TCP socket (see man 2 socket). */
-    server_fd = ???;
+    server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd < 0) {
         perror("socket");
         return 1;
@@ -109,14 +109,14 @@ int main(void)
     address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
     /* TODO 3: Give the socket its local address (see man 2 bind). */
-    if (??? < 0) {
+    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
         perror("bind");
         close(server_fd);
         return 1;
     }
 
     /* TODO 4: Start listening (see man 2 listen). */
-    if (??? < 0) {
+    if (listen(server_fd, BACKLOG) < 0) {
         perror("listen");
         close(server_fd);
         return 1;
@@ -130,7 +130,7 @@ int main(void)
 
     while (!stopping) {
         /* TODO 5: Accept one connection (see man 2 accept). */
-        client_fd = ???;
+        client_fd = accept(server_fd, NULL, NULL);
         /* SIGINT might have arrived while (or just before) accepting. */
         if (stopping) {
             if (client_fd >= 0) {
@@ -148,7 +148,7 @@ int main(void)
         }
 
         /* TODO 6: Make a child process (see man 2 fork). */
-        pid = ???;
+        pid = fork();
         if (pid < 0) {
             perror("fork");
             close(client_fd);
